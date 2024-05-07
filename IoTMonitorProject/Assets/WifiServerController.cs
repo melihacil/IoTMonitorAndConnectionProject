@@ -6,9 +6,14 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 using System.ComponentModel;
+using System.Linq;
 
 public class WifiServerController : MonoBehaviour
 {
+
+
+    public static WifiServerController instance;
+
     TcpListener server = null;
     TcpClient client = null;
     NetworkStream stream = null;
@@ -18,6 +23,15 @@ public class WifiServerController : MonoBehaviour
 
     private void Start()
     {
+        _serverIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(
+            f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
+        Debug.Log("Local IP address = " + _serverIP);
+        if (instance != null)
+        {
+            Debug.Log("Server instance found! destroying = " + gameObject.name);
+            Destroy(this.gameObject);
+        }
+        instance = this;
         thread = new Thread(new ThreadStart(SetupServer));
         thread.Start();
     }
@@ -37,11 +51,21 @@ public class WifiServerController : MonoBehaviour
         //}
     }
 
+    public void StartServer()
+    {
+        
+
+
+
+        thread = new Thread(new ThreadStart(SetupServer));
+        thread.Start();
+    }
+
     private void SetupServer()
     {
         try
         {
-            IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+            IPAddress localAddr = IPAddress.Parse(_serverIP);
             server = new TcpListener(localAddr, 3008);
             server.Start();
 
@@ -80,8 +104,18 @@ public class WifiServerController : MonoBehaviour
         }
     }
 
+    public void CloseServer()
+    {
+        stream.Close();
+        client.Close();
+        server.Stop();
+        thread.Abort();
+    }
+
     private void OnApplicationQuit()
     {
+        if (thread == null)
+            return;
         stream.Close();
         client.Close();
         server.Stop();

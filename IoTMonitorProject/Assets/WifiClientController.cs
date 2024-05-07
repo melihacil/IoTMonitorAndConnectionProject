@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WifiClientController : MonoBehaviour
 {
@@ -16,9 +17,13 @@ public class WifiClientController : MonoBehaviour
     private NetworkStream stream;
     private Thread clientReceiveThread;
 
+    [SerializeField] private Text _clientMessage;
+    [SerializeField] private Text _serverIP;
+
+
     void Start()
     {
-        ConnectToServer();
+       // ConnectToServer();
     }
 
     void Update()
@@ -30,11 +35,14 @@ public class WifiClientController : MonoBehaviour
         }
     }
 
-    void ConnectToServer()
+    public void ConnectToServer()
     {
+        Debug.Log("Connecting to " + _serverIP.text);
+
         try
         {
-            client = new TcpClient(serverIP, serverPort);
+            Debug.Log("Connecting to " + _serverIP.text);
+            client = new TcpClient(_serverIP.text, serverPort);
             stream = client.GetStream();
             Debug.Log("Connected to server.");
 
@@ -76,6 +84,12 @@ public class WifiClientController : MonoBehaviour
             Debug.Log("Socket exception: " + socketException);
         }
     }
+
+    public void SendDataButton()
+    {
+        SendMessageToServer(_clientMessage.text);
+    }
+
 
     public void SendMessageToServer(string message)
     {

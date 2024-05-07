@@ -5,13 +5,19 @@ using UnityEngine.UI;
 
 public class LogManager : MonoBehaviour
 {
+    public static LogManager Instance { get; private set; }
     uint qsize = 15;  // number of messages to keep
     Queue myLogQueue = new Queue();
     [SerializeField] TextMeshProUGUI _logArea;
-    [SerializeField] Text _logText;
+    [SerializeField] Text[] _logText;
 
     void Start()
     {
+        if (Instance != null)
+        {
+            Destroy(this.gameObject);
+        }
+        Instance = this;
         Debug.Log("Started up logging.");
         StartCoroutine(nameof(TestLogger));
     }
@@ -48,8 +54,8 @@ public class LogManager : MonoBehaviour
         while (myLogQueue.Count > qsize)
             myLogQueue.Dequeue();
         //_logArea.text = myLogQueue.ToString();
-
-        _logText.text = "\n" + string.Join("\n", myLogQueue.ToArray());
+        foreach (var textfield in _logText)
+            textfield.text = "\n" + string.Join("\n", myLogQueue.ToArray());
     }
 
     //void OnGUI()

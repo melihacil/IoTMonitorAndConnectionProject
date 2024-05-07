@@ -8,6 +8,18 @@ public class PanelController : MonoBehaviour
     [SerializeField] private List<GameObject> _gamePanels;
 
     int activePanel = 0;
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            ReturnToMainPanel();
+            if (WifiServerController.instance != null)
+            {
+                WifiServerController.instance.CloseServer();
+            }
+        }
+    }
     public void OpenMainPanel()
     {
         foreach (GameObject panel in _gamePanels)
@@ -32,7 +44,6 @@ public class PanelController : MonoBehaviour
         activePanel = index;
         _gamePanels[activePanel].SetActive(true);
         _gamePanels[0].SetActive(false);
-
     }
 
     public void CloseApplication()
