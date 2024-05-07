@@ -21,6 +21,8 @@ public class BluetoothManager : MonoBehaviour
     {
 #if UNITY_STANDALONE_WIN
         Debug.Log("Windows version, App Started = " + SystemInfo.deviceName + " Device model = " + SystemInfo.deviceModel);
+#elif UNITY_ANDROID
+        Debug.Log("Android App Started = " + SystemInfo.deviceName + " Device model = " + SystemInfo.deviceModel);
 #endif
         InitBluetooth();
         isConnected = false;
@@ -33,10 +35,6 @@ public class BluetoothManager : MonoBehaviour
         if (Application.platform != RuntimePlatform.Android)
             return;
         Debug.Log("Android App Started = " + SystemInfo.deviceName + " Device model = " + SystemInfo.deviceModel);
-#if UNITY_ANDROID
-        Debug.Log("Android App Started = " + SystemInfo.deviceName + " Device model = " + SystemInfo.deviceModel);
-    
-#endif
         // Check BT and location permissions
         if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation)
             || !Permission.HasUserAuthorizedPermission(Permission.FineLocation)
