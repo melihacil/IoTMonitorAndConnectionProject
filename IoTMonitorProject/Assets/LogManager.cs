@@ -28,9 +28,7 @@ public class LogManager : MonoBehaviour
         WaitForSeconds waitTime = new WaitForSeconds(1);
         while (true)
         {
-            Debug.Log("Test Logger" + myLogQueue.Count);
-            Debug.LogWarning("Warning Logger");
-            Debug.LogError("Error logger");
+            Debug.Log("Test Logger" +  (myLogQueue.Count - 1));
             yield return waitTime;
         }
     }
@@ -49,7 +47,6 @@ public class LogManager : MonoBehaviour
             myLogQueue.Enqueue(stackTrace);
         while (myLogQueue.Count > qsize)
             myLogQueue.Dequeue();
-
         //_logArea.text = myLogQueue.ToString();
 
         _logText.text = "\n" + string.Join("\n", myLogQueue.ToArray());
