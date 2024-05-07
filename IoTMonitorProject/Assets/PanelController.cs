@@ -7,7 +7,7 @@ public class PanelController : MonoBehaviour
 
     [SerializeField] private List<GameObject> _gamePanels;
 
-
+    int activePanel = 0;
     public void OpenMainPanel()
     {
         foreach (GameObject panel in _gamePanels)
@@ -19,9 +19,9 @@ public class PanelController : MonoBehaviour
 
 
 
-    public void ReturnToMainPanel(int index)
+    public void ReturnToMainPanel()
     {
-        _gamePanels[index].SetActive(false);
+        _gamePanels[activePanel].SetActive(false);
         _gamePanels[0].SetActive(true);
 
     }
@@ -29,7 +29,8 @@ public class PanelController : MonoBehaviour
 
     public void OpenIndexedPanel(int index)
     {
-        _gamePanels[index].SetActive(true);
+        activePanel = index;
+        _gamePanels[activePanel].SetActive(true);
         _gamePanels[0].SetActive(false);
 
     }
