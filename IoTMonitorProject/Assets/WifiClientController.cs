@@ -10,8 +10,8 @@ using UnityEngine.UI;
 public class WifiClientController : MonoBehaviour
 {
     public string serverIP = "127.0.0.1"; // Set this to your server's IP address.
-    public int serverPort = 3008;             // Set this to your server's port.
-    private string messageToSend = "Hello Server!"; // The message to send.
+    public int serverPort = 31008;             // Set this to your server's port.
+    private string firstMessageToSend = "Hello Server!"; // The message to send.
 
     private TcpClient client;
     private NetworkStream stream;
@@ -23,7 +23,8 @@ public class WifiClientController : MonoBehaviour
 
     void Start()
     {
-       // ConnectToServer();
+        // ConnectToServer();
+        
     }
 
     void Update()
@@ -31,7 +32,7 @@ public class WifiClientController : MonoBehaviour
         //disable this if you are sending from another script or a button
         if (Input.GetKeyDown(KeyCode.V))
         {
-            SendMessageToServer(messageToSend);
+            SendMessageToServer(firstMessageToSend);
         }
     }
 
@@ -45,10 +46,12 @@ public class WifiClientController : MonoBehaviour
             client = new TcpClient(_serverIP.text, serverPort);
             stream = client.GetStream();
             Debug.Log("Connected to server.");
+            
 
             clientReceiveThread = new Thread(new ThreadStart(ListenForData));
             clientReceiveThread.IsBackground = true;
             clientReceiveThread.Start();
+            SendMessageToServer(EssentialData());
         }
         catch (SocketException e)
         {
@@ -90,6 +93,18 @@ public class WifiClientController : MonoBehaviour
         SendMessageToServer(_clientMessage.text);
     }
 
+
+    private string EssentialData()
+    {
+        var deviceInfo =
+            SystemInfo.deviceName +
+            " Device model = " + SystemInfo.deviceModel
+            +"\nBattery level / status :" + SystemInfo.batteryLevel + "/" + SystemInfo.batteryStatus
+            +"\nOS Info :" + SystemInfo.operatingSystem + " " + SystemInfo.operatingSystemFamily + " family"
+            +"\nCPU: " + SystemInfo.processorType + " freq:" + SystemInfo.processorFrequency.ToString()
+            +"\nGPU: " + SystemInfo.graphicsDeviceName + " " + SystemInfo.graphicsDeviceType + " " + SystemInfo.graphicsDeviceVendor; 
+        return deviceInfo;
+    }
 
     public void SendMessageToServer(string message)
     {

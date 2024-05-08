@@ -66,12 +66,12 @@ public class WifiServerController : MonoBehaviour
         try
         {
             IPAddress localAddr = IPAddress.Parse(_serverIP);
-            server = new TcpListener(localAddr, 3008);
+            server = new TcpListener(localAddr, 31008);
             server.Start();
 
             byte[] buffer = new byte[1024];
             string data = null;
-
+            
             while (true)
             {
                 Debug.Log("Waiting for connection...");
@@ -126,6 +126,6 @@ public class WifiServerController : MonoBehaviour
     {
         byte[] msg = Encoding.UTF8.GetBytes(message);
         stream.Write(msg, 0, msg.Length);
-        Debug.Log("Sent: " + message);
+        Debug.Log("Sent to client: " + message);
     }
 }

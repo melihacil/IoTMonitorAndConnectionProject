@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class LogManager : MonoBehaviour
 {
@@ -34,7 +35,7 @@ public class LogManager : MonoBehaviour
         WaitForSeconds waitTime = new WaitForSeconds(1);
         while (true)
         {
-            Debug.Log("Test Logger" +  (myLogQueue.Count - 1));
+            //Debug.Log("Test Logger" +  (myLogQueue.Count - 1));
             yield return waitTime;
         }
     }
@@ -47,7 +48,7 @@ public class LogManager : MonoBehaviour
 
     void HandleLog(string logString, string stackTrace, LogType type)
     {
-        Debug.Log(myLogQueue.Count);
+        //Debug.Log(myLogQueue.Count);
         myLogQueue.Enqueue("[" + type + "] : " + logString);
         if (type == LogType.Exception)
             myLogQueue.Enqueue(stackTrace);
@@ -56,6 +57,8 @@ public class LogManager : MonoBehaviour
         //_logArea.text = myLogQueue.ToString();
         foreach (var textfield in _logText)
             textfield.text = "\n" + string.Join("\n", myLogQueue.ToArray());
+
+        //textfield.textInputUssName = "\n" + string.Join("\n", myLogQueue.ToArray());
     }
 
     //void OnGUI()
