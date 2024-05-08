@@ -19,13 +19,23 @@ public class WifiClientController : MonoBehaviour
 
     [SerializeField] private Text _clientMessage;
     [SerializeField] private Text _serverIP;
+    [SerializeField] private Text _lastConnectedText;
+    [SerializeField] private InputField _lastConnectedInput;
     Thread thread;
+    [SerializeField] private string[] oldServers;
+    [SerializeField] private GameObject _lastConnectedPanel;
+
 
     void Start()
     {
         // ConnectToServer();
 
-
+        var lastSaved = PlayerPrefs.GetString("lastSaved");
+        _lastConnectedPanel.SetActive(false);
+        if (lastSaved != "")
+        {
+            SetLCPanel(lastSaved);
+        }
         
     }
 
@@ -38,6 +48,34 @@ public class WifiClientController : MonoBehaviour
         }
     }
 
+
+    #region PlayerPrefs
+
+    public void SetString(string KeyName, string Value)
+    {
+        PlayerPrefs.SetString(KeyName, Value);
+    }
+
+    public void GetString(string key)
+    {
+        PlayerPrefs.GetString(key);
+    }
+
+    private void SetLCPanel(string lastSaved)
+    {
+        _lastConnectedPanel.SetActive(true);
+        _lastConnectedText.text = lastSaved;
+    }
+
+    public void SetLCText()
+    {
+        //_serverIP.text = _lastConnectedText.text;
+        //_serverIP.text = "Test";
+        _lastConnectedInput.text = _lastConnectedText.text;
+    }
+    #endregion
+
+
     /// <summary>
     /// This code should be used as to fix the flow stopping
     /// </summary>
@@ -49,9 +87,9 @@ public class WifiClientController : MonoBehaviour
 
     public void ConnectToServer()
     {
-
         Debug.Log("Connecting to " + _serverIP.text);
-
+        SetLCPanel(_serverIP.text);
+        SetString("lastSaved", _serverIP.text);
         try
         {
             Debug.Log("Connecting to " + _serverIP.text);

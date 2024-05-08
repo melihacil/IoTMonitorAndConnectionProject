@@ -28,8 +28,6 @@ public class LogManager : MonoBehaviour
         Application.logMessageReceived += HandleLog;
     }
 
-
-
     IEnumerator TestLogger()
     {
         WaitForSeconds waitTime = new WaitForSeconds(1);
