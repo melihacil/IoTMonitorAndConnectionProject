@@ -19,11 +19,13 @@ public class WifiClientController : MonoBehaviour
 
     [SerializeField] private Text _clientMessage;
     [SerializeField] private Text _serverIP;
-
+    Thread thread;
 
     void Start()
     {
         // ConnectToServer();
+
+
         
     }
 
@@ -36,8 +38,18 @@ public class WifiClientController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// This code should be used as to fix the flow stopping
+    /// </summary>
+    public void StartConnection()
+    {
+        thread = new Thread(new ThreadStart(ConnectToServer));
+        thread.Start();
+    }
+
     public void ConnectToServer()
     {
+
         Debug.Log("Connecting to " + _serverIP.text);
 
         try
