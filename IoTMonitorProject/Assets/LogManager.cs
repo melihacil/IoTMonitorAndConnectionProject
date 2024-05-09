@@ -11,6 +11,7 @@ public class LogManager : MonoBehaviour
     Queue myLogQueue = new Queue();
     [SerializeField] TextMeshProUGUI _logArea;
     [SerializeField] Text[] _logText;
+    [SerializeField] TextMeshProUGUI[] _logTexts;
 
     void Start()
     {
@@ -53,7 +54,7 @@ public class LogManager : MonoBehaviour
         while (myLogQueue.Count > qsize)
             myLogQueue.Dequeue();
         //_logArea.text = myLogQueue.ToString();
-        foreach (var textfield in _logText)
+        foreach (var textfield in _logTexts)
             textfield.text = "\n" + string.Join("\n", myLogQueue.ToArray());
 
         //textfield.textInputUssName = "\n" + string.Join("\n", myLogQueue.ToArray());

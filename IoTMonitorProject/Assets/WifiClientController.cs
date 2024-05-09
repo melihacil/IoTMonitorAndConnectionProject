@@ -25,7 +25,6 @@ public class WifiClientController : MonoBehaviour
     [SerializeField] private string[] oldServers;
     [SerializeField] private GameObject _lastConnectedPanel;
 
-
     void Start()
     {
         // ConnectToServer();
@@ -131,6 +130,7 @@ public class WifiClientController : MonoBehaviour
                         // Convert byte array to string message.
                         string serverMessage = Encoding.UTF8.GetString(incomingData);
                         Debug.Log("Server message received: " + serverMessage);
+                        ControlClient(serverMessage);
                     }
                 }
             }
@@ -168,9 +168,15 @@ public class WifiClientController : MonoBehaviour
         switch (serverMessage)
         {
             case "tst":
-                BluetoothManager.Instance.Toast(serverMessage);
+                BluetoothManager.Instance.Toast(serverMessage.Remove(0,3));
+                //BluetoothManager.Instance.Toast(serverMessage.Substring(3));
                 break;
-
+            case "inf":
+                SendMessageToServer(EssentialData());
+                break;
+            default:
+                BluetoothManager.Instance.Toast(serverMessage.Remove(0, 3));
+                break;
         }
 
 

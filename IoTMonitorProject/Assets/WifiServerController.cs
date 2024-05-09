@@ -8,6 +8,7 @@ using UnityEngine;
 using System.ComponentModel;
 using System.Linq;
 using System;
+using UnityEngine.UI;
 
 public class WifiServerController : MonoBehaviour
 {
@@ -23,7 +24,7 @@ public class WifiServerController : MonoBehaviour
     [SerializeField] private string _serverIP = "172.33.133.57";
     [SerializeField] private GameObject _androidDeviceControls;
     [SerializeField] private GameObject _otherDeviceControls;
-
+    [SerializeField] private Text _serverMessage;
 
     Queue<Action> jobs = new Queue<Action>();
     /// <summary>
@@ -193,6 +194,13 @@ public class WifiServerController : MonoBehaviour
         client.Close();
         server.Stop();
         thread.Abort();
+    }
+
+    public void SendMessageToClient()
+    {
+        byte[] msg = Encoding.UTF8.GetBytes(_serverMessage.text);
+        stream.Write(msg, 0, msg.Length);
+        Debug.Log("Sent to client: " + _serverMessage.text);
     }
 
     public void SendMessageToClient(string message)
