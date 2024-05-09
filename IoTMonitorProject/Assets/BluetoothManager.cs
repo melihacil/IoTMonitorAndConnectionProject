@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class BluetoothManager : MonoBehaviour
 {
+    public static BluetoothManager Instance { get; private set; }
+
     public Text deviceAdd;
     public Text dataToSend;
     public Text receivedData;
@@ -19,6 +21,13 @@ public class BluetoothManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (BluetoothConnector != null)
+        {
+            Debug.Log("Already Found Bluetooth Manager!...");
+            Destroy(this.gameObject);
+        }
+        Instance = this;
+
 #if UNITY_STANDALONE_WIN
         Debug.Log("Windows version, App Started = " + SystemInfo.deviceName + " Device model = " + SystemInfo.deviceModel);
 #elif UNITY_ANDROID

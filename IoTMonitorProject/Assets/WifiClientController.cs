@@ -101,7 +101,10 @@ public class WifiClientController : MonoBehaviour
             clientReceiveThread = new Thread(new ThreadStart(ListenForData));
             clientReceiveThread.IsBackground = true;
             clientReceiveThread.Start();
-            SendMessageToServer(EssentialData());
+            if (Application.platform != RuntimePlatform.Android)
+                SendMessageToServer(EssentialData());
+            else
+                SendMessageToServer("Android");
         }
         catch (SocketException e)
         {
@@ -143,6 +146,35 @@ public class WifiClientController : MonoBehaviour
         SendMessageToServer(_clientMessage.text);
     }
 
+
+
+    /// <summary>
+    /// Need to break the serverMessage for basic string manipulation
+    /// First three letters decide what the server msg does
+    /// Msg codes:
+    /// Toast message for android   -> tst
+    /// Check battery               -> bat
+    /// Get device info             -> inf
+    /// Control screen brightness   -> lum // Needs work
+    /// Control volume              -> vup
+    /// Volume down                 -> vdn
+    /// </summary>
+    /// <param name="serverMessage"></param>
+    private void ControlClient(string serverMessage)
+    {
+       // regex for client control
+
+
+        switch (serverMessage)
+        {
+            case "tst":
+                BluetoothManager.Instance.Toast(serverMessage);
+                break;
+
+        }
+
+
+    }
 
     private string EssentialData()
     {
