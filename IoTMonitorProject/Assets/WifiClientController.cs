@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -15,6 +16,8 @@ public class WifiClientController : MonoBehaviour
 
     private TcpClient client;
     private NetworkStream stream;
+    private StreamWriter writer;
+    private StreamReader reader;
     private Thread clientReceiveThread;
 
     [SerializeField] private Text _clientMessage;
@@ -94,11 +97,13 @@ public class WifiClientController : MonoBehaviour
             Debug.Log("Connecting to " + _serverIP.text);
             client = new TcpClient(_serverIP.text, serverPort);
             stream = client.GetStream();
+            writer = new StreamWriter(stream);
+            reader = new StreamReader(stream);
             Debug.Log("Connected to server.");
             
 
             clientReceiveThread = new Thread(new ThreadStart(ListenForData));
-            clientReceiveThread.IsBackground = true;
+           // clientReceiveThread.IsBackground = true;
             clientReceiveThread.Start();
             if (Application.platform != RuntimePlatform.Android)
                 SendMessageToServer(EssentialData());
@@ -121,14 +126,11 @@ public class WifiClientController : MonoBehaviour
                 // Check if there's any data available on the network stream
                 if (stream.DataAvailable)
                 {
-                    int length;
-                    // Read incoming stream into byte array.
-                    while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+                    Debug.Log("DATA AVAILABLE ON CLIENT");
+                    int length = stream.Read(bytes, 0, bytes.Length);
+                    if (length > 0)
                     {
-                        var incomingData = new byte[length];
-                        Array.Copy(bytes, 0, incomingData, 0, length);
-                        // Convert byte array to string message.
-                        string serverMessage = Encoding.UTF8.GetString(incomingData);
+                        string serverMessage = Encoding.UTF8.GetString(bytes, 0, length);
                         Debug.Log("Server message received: " + serverMessage);
                         ControlClient(serverMessage);
                     }
@@ -137,7 +139,7 @@ public class WifiClientController : MonoBehaviour
         }
         catch (SocketException socketException)
         {
-            Debug.Log("Socket exception: " + socketException);
+            Debug.Log("Listening (Client) Socket exception: " + socketException);
         }
     }
 

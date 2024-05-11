@@ -16,6 +16,8 @@ public class WifiServerController : MonoBehaviour
 
     public static WifiServerController instance;
 
+    // Declare a dictionary to store streams associated with client IDs
+    private Dictionary<int, NetworkStream> clientStreams = new Dictionary<int, NetworkStream>();
     TcpListener server = null;
     TcpClient client = null;
     NetworkStream stream = null;
@@ -100,6 +102,9 @@ public class WifiServerController : MonoBehaviour
                 data = null;
                 stream = client.GetStream();
 
+                // Store the client's stream in the dictionary using a unique identifier (e.g., client.GetHashCode())
+                clientStreams.Add(client.GetHashCode(), stream);
+
                 int i;
 
                 while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
@@ -112,7 +117,9 @@ public class WifiServerController : MonoBehaviour
                         InitConnection(data);
                     }
                     string response = "Server response: " + data.ToString();
-                    SendMessageToClient(message: response);
+
+                    // Send the response to the client using the stored stream
+                    SendMessageToClient(client.GetHashCode(), message: response);
                 }
                 client.Close();
             }
@@ -194,6 +201,21 @@ public class WifiServerController : MonoBehaviour
         client.Close();
         server.Stop();
         thread.Abort();
+    }
+
+    public void SendMessageToClient(int clientId, string message)
+    {
+        if (clientStreams.ContainsKey(clientId))
+        {
+            NetworkStream clientStream = clientStreams[clientId];
+            byte[] msg = Encoding.UTF8.GetBytes(message);
+            clientStream.Write(msg, 0, msg.Length);
+            Debug.Log("Sent to client " + clientId + ": " + message);
+        }
+        else
+        {
+            Debug.LogError("Client with ID " + clientId + " not found.");
+        }
     }
 
     public void SendMessageToClient()
