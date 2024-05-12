@@ -42,10 +42,16 @@ public class WifiServerController : MonoBehaviour
             Destroy(this.gameObject);
         }
         // Get device ip
-        _serverIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(
-            f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
-        Debug.Log("Local IP address = " + _serverIP);
-        
+        try
+        {
+            _serverIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(
+                f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
+            Debug.Log("Local IP address = " + _serverIP);
+
+        }
+        catch (Exception e) { 
+            Debug.LogError(e);
+        }
         instance = this;
         thread = new Thread(new ThreadStart(SetupServer));
         thread.Start();

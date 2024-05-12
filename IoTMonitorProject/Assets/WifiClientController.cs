@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,6 +28,8 @@ public class WifiClientController : MonoBehaviour
     Thread thread;
     [SerializeField] private string[] oldServers;
     [SerializeField] private GameObject _lastConnectedPanel;
+
+    private bool isFinished = false;
 
     void Start()
     {
@@ -100,11 +103,17 @@ public class WifiClientController : MonoBehaviour
             writer = new StreamWriter(stream);
             reader = new StreamReader(stream);
             Debug.Log("Connected to server.");
-            
+            isFinished = false;
+#if UNITY_ANDROID
 
+            StartCoroutine(nameof(ListenDataCoroutine));
+
+#else
             clientReceiveThread = new Thread(new ThreadStart(ListenForData));
            // clientReceiveThread.IsBackground = true;
             clientReceiveThread.Start();
+#endif
+
             if (Application.platform != RuntimePlatform.Android)
                 SendMessageToServer(EssentialData());
             else
@@ -116,13 +125,41 @@ public class WifiClientController : MonoBehaviour
         }
     }
 
+
+    private IEnumerator ListenDataCoroutine()
+    {
+        Debug.Log("Starting to listen");
+        byte[] bytes = new byte[1024];
+        while (!isFinished)
+        {
+            Debug.Log("Listening for data");
+            // Check if there's any data available on the network stream
+            if (stream.DataAvailable)
+            {
+                Debug.Log("DATA AVAILABLE ON CLIENT");
+                int length = stream.Read(bytes, 0, bytes.Length);
+                if (length > 0)
+                {
+                    string serverMessage = Encoding.UTF8.GetString(bytes, 0, length);
+                    Debug.Log("Server message received: " + serverMessage);
+                    ControlClient(serverMessage);
+                }
+            }
+            yield return null;
+        }
+        Debug.Log("Finished listening, closing stream");
+        yield return null;
+    }
+
     private void ListenForData()
     {
         try
         {
+            Debug.Log("Starting to listen");
             byte[] bytes = new byte[1024];
             while (true)
             {
+                Debug.Log("Listening for data");
                 // Check if there's any data available on the network stream
                 if (stream.DataAvailable)
                 {
@@ -175,6 +212,10 @@ public class WifiClientController : MonoBehaviour
                 break;
             case "inf":
                 SendMessageToServer(EssentialData());
+                break;
+            case "cls":
+                isFinished = true;
+
                 break;
             default:
                 BluetoothManager.Instance.Toast(serverMessage.Remove(0, 3));

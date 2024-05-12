@@ -11,7 +11,7 @@ public class PanelController : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if(Application.platform != RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))
         {
             ReturnToMainPanel();
             if (WifiServerController.instance != null)
