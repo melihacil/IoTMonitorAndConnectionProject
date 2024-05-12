@@ -53,8 +53,22 @@ public class WifiServerController : MonoBehaviour
             Debug.LogError(e);
         }
         instance = this;
-        thread = new Thread(new ThreadStart(SetupServer));
-        thread.Start();
+
+
+#if UNITY_ANDROID
+        Debug.Log("Starting Android Server Setup");
+        StartCoroutine(nameof(CoroutineSetupServer));
+        //clientReceiveThread = new Thread(() =>
+        //{
+        //    // ListenForData should be run on the thread
+        //    ListenForData();
+        //});
+        //clientReceiveThread.Start();
+#else
+            Debug.Log("Other build, starting thread server");
+            thread = new Thread(new ThreadStart(SetupServer));
+            thread.Start();
+#endif
 
         // Close client control panels
         _androidDeviceControls.SetActive(false);
@@ -86,6 +100,60 @@ public class WifiServerController : MonoBehaviour
     {
         thread = new Thread(new ThreadStart(SetupServer));
         thread.Start();
+    }
+
+
+    private IEnumerator CoroutineSetupServer()
+    {
+        try
+        {
+            IPAddress localAddr = IPAddress.Parse(_serverIP);
+            server = new TcpListener(localAddr, 31008);
+            server.Start();
+
+            byte[] buffer = new byte[1024];
+            string data = null;
+            bool init = false;
+            while (true)
+            {
+                Debug.Log("Waiting for connection...");
+                client = server.AcceptTcpClient();
+                Debug.Log("Connected!");
+
+                data = null;
+                stream = client.GetStream();
+
+                // Store the client's stream in the dictionary using a unique identifier (e.g., client.GetHashCode())
+                clientStreams.Add(client.GetHashCode(), stream);
+
+                int i;
+
+                while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    data = Encoding.UTF8.GetString(buffer, 0, i);
+                    Debug.Log("Received: " + data);
+                    if (!init)
+                    {
+                        init = true;
+                        InitConnection(data);
+                    }
+                    string response = "Server response: " + data.ToString();
+
+                    // Send the response to the client using the stored stream
+                    SendMessageToClient(client.GetHashCode(), message: response);
+                }
+                client.Close();
+                yield return null;
+            }
+        }
+        finally
+        {
+
+            Debug.Log("Closing Server");
+            server.Stop();
+
+        }
+
     }
 
     private void SetupServer()

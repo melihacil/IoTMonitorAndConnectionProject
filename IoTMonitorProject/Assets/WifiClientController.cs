@@ -105,9 +105,14 @@ public class WifiClientController : MonoBehaviour
             Debug.Log("Connected to server.");
             isFinished = false;
 #if UNITY_ANDROID
-
+            Debug.Log("Android build, starting coroutine listening method");
             StartCoroutine(nameof(ListenDataCoroutine));
-
+            //clientReceiveThread = new Thread(() =>
+            //{
+            //    // ListenForData should be run on the thread
+            //    ListenForData();
+            //});
+            //clientReceiveThread.Start();
 #else
             clientReceiveThread = new Thread(new ThreadStart(ListenForData));
            // clientReceiveThread.IsBackground = true;
@@ -132,6 +137,7 @@ public class WifiClientController : MonoBehaviour
         byte[] bytes = new byte[1024];
         while (!isFinished)
         {
+            yield return new WaitUntil(() => stream.DataAvailable);
             Debug.Log("Listening for data");
             // Check if there's any data available on the network stream
             if (stream.DataAvailable)
@@ -145,7 +151,6 @@ public class WifiClientController : MonoBehaviour
                     ControlClient(serverMessage);
                 }
             }
-            yield return null;
         }
         Debug.Log("Finished listening, closing stream");
         yield return null;
