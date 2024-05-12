@@ -2453,6 +2453,7 @@ MonoBehaviour:
   _androidDeviceControls: {fileID: 1711120589}
   _otherDeviceControls: {fileID: 1578340534}
   _serverMessage: {fileID: 334465660}
+  maxWaitTime: 1
 --- !u!4 &385953180
 Transform:
   m_ObjectHideFlags: 0

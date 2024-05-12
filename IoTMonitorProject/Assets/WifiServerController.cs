@@ -9,6 +9,9 @@ using System.ComponentModel;
 using System.Linq;
 using System;
 using UnityEngine.UI;
+using UnityEditor.PackageManager;
+using System.Threading.Tasks;
+
 
 public class WifiServerController : MonoBehaviour
 {
@@ -27,8 +30,10 @@ public class WifiServerController : MonoBehaviour
     [SerializeField] private GameObject _androidDeviceControls;
     [SerializeField] private GameObject _otherDeviceControls;
     [SerializeField] private Text _serverMessage;
+    [SerializeField] private float maxWaitTime;
 
     Queue<Action> jobs = new Queue<Action>();
+
     /// <summary>
     /// Changes the server ip to be compliant with the device ip,
     /// it also creates threads to start the server
@@ -58,12 +63,12 @@ public class WifiServerController : MonoBehaviour
 #if UNITY_ANDROID
         Debug.Log("Starting Android Server Setup");
         StartCoroutine(nameof(CoroutineSetupServer));
-        //clientReceiveThread = new Thread(() =>
+        //thread = new Thread(() =>
         //{
         //    // ListenForData should be run on the thread
-        //    ListenForData();
+        //    SetupServer();
         //});
-        //clientReceiveThread.Start();
+        //thread.Start();
 #else
             Debug.Log("Other build, starting thread server");
             thread = new Thread(new ThreadStart(SetupServer));
@@ -111,26 +116,42 @@ public class WifiServerController : MonoBehaviour
             server = new TcpListener(localAddr, 31008);
             server.Start();
 
+            while (true)
+            {
+                // Check for pending connection without blocking indefinitely
+                if (server.Pending())
+                {
+                    client = server.AcceptTcpClient();
+                    Debug.Log("Connected!");
+
+                    // Handle the connection asynchronously
+                    Task.Run(() => HandleClientConnection(client));
+                }
+
+                yield return null; // Allow other coroutines to run and avoid blocking indefinitely
+            }
+        }
+        finally
+        {
+            Debug.Log("Closing Server");
+            server.Stop();
+        }
+    }
+
+    private async void HandleClientConnection(TcpClient client)
+    {
+        try
+        {
             byte[] buffer = new byte[1024];
             string data = null;
             bool init = false;
-            while (true)
+
+            using (stream = client.GetStream())
             {
-                Debug.Log("Waiting for connection...");
-                client = server.AcceptTcpClient();
-                Debug.Log("Connected!");
-
-                data = null;
-                stream = client.GetStream();
-
-                // Store the client's stream in the dictionary using a unique identifier (e.g., client.GetHashCode())
-                clientStreams.Add(client.GetHashCode(), stream);
-
-                int i;
-
-                while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
+                int bytesRead;
+                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) != 0)
                 {
-                    data = Encoding.UTF8.GetString(buffer, 0, i);
+                    data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Debug.Log("Received: " + data);
                     if (!init)
                     {
@@ -138,23 +159,22 @@ public class WifiServerController : MonoBehaviour
                         InitConnection(data);
                     }
                     string response = "Server response: " + data.ToString();
-
-                    // Send the response to the client using the stored stream
-                    SendMessageToClient(client.GetHashCode(), message: response);
+                    //SendMessageToClient(client.GetHashCode(), message: response);
+                    SendMessageToClient(message: response);
                 }
-                client.Close();
-                yield return null;
             }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error handling client connection: " + ex.Message);
         }
         finally
         {
-
-            Debug.Log("Closing Server");
-            server.Stop();
-
+            client.Close();
         }
-
     }
+
+
 
     private void SetupServer()
     {
