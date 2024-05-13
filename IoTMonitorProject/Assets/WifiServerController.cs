@@ -114,7 +114,7 @@ public class WifiServerController : MonoBehaviour
             IPAddress localAddr = IPAddress.Parse(_serverIP);
             server = new TcpListener(localAddr, 31008);
             server.Start();
-
+            Debug.Log("Starting WIFI Server");
             while (true)
             {
                 // Check for pending connection without blocking indefinitely

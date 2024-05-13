@@ -142,7 +142,7 @@ public class WifiClientController : MonoBehaviour
             // Check if there's any data available on the network stream
             if (stream.DataAvailable)
             {
-                Debug.Log("DATA AVAILABLE ON CLIENT");
+                // Debug.Log("DATA AVAILABLE ON CLIENT");
                 int length = stream.Read(bytes, 0, bytes.Length);
                 if (length > 0)
                 {
@@ -212,7 +212,7 @@ public class WifiClientController : MonoBehaviour
         switch (serverMessage)
         {
             case "tst":
-                BluetoothManager.Instance.Toast(serverMessage.Remove(0,3));
+                BluetoothManager.Instance.Toast(serverMessage.Remove(0,3) );
                 //BluetoothManager.Instance.Toast(serverMessage.Substring(3));
                 break;
             case "inf":
@@ -221,6 +221,9 @@ public class WifiClientController : MonoBehaviour
             case "cls":
                 isFinished = true;
 
+                break;
+            case "bat":
+                SendMessageToServer("\nBattery level / status :" + SystemInfo.batteryLevel + "/" + SystemInfo.batteryStatus);
                 break;
             default:
                 BluetoothManager.Instance.Toast(serverMessage.Remove(0, 3));
