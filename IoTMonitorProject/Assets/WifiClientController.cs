@@ -20,6 +20,8 @@ public class WifiClientController : MonoBehaviour
     private StreamWriter writer;
     private StreamReader reader;
     private Thread clientReceiveThread;
+    private AndroidNativeVolumeService volumeService;
+
 
     [SerializeField] private Text _clientMessage;
     [SerializeField] private Text _serverIP;
@@ -41,7 +43,8 @@ public class WifiClientController : MonoBehaviour
         {
             SetLCPanel(lastSaved);
         }
-        
+
+        volumeService = new AndroidNativeVolumeService();
     }
 
     void Update()
@@ -190,7 +193,12 @@ public class WifiClientController : MonoBehaviour
         SendMessageToServer(_clientMessage.text);
     }
 
-
+    public void CloseConnection()
+    {
+        SendMessageToServer("Closing connection, from client");
+        BluetoothManager.Instance.Toast("Closed connection");
+        isFinished = true;
+    }
 
     /// <summary>
     /// Need to break the serverMessage for basic string manipulation
@@ -219,8 +227,17 @@ public class WifiClientController : MonoBehaviour
                 SendMessageToServer(EssentialData());
                 break;
             case "cls":
+                SendMessageToServer("Closing connection, from client");
+                BluetoothManager.Instance.Toast("Closed connection");
                 isFinished = true;
-
+                break;
+            case "vdn":
+                volumeService.SetSystemVolume(volumeService.GetSystemVolume() - 0.1f);
+                SendMessageToServer("Volume down to = " +volumeService.GetSystemVolume() * 100 + "/100");
+                break;
+            case "vup":
+                volumeService.SetSystemVolume(volumeService.GetSystemVolume() + 0.1f);
+                SendMessageToServer("Volume up to = " + volumeService.GetSystemVolume() * 100 + "/100");
                 break;
             case "bat":
                 SendMessageToServer("\nBattery level / status :" + SystemInfo.batteryLevel + "/" + SystemInfo.batteryStatus);

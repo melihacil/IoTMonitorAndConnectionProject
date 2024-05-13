@@ -10,6 +10,7 @@ using System.Linq;
 using System;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using UnityEngine.Android;
 
 
 public class WifiServerController : MonoBehaviour
@@ -77,6 +78,9 @@ public class WifiServerController : MonoBehaviour
         // Close client control panels
         _androidDeviceControls.SetActive(false);
         _otherDeviceControls.SetActive(false);
+
+        //AndroidDevice.hardwareType.Equals(AndroidDevice.hardwareType);
+        UnityEngine.Device.Screen.brightness = 10f;
     }
 
 
@@ -102,10 +106,15 @@ public class WifiServerController : MonoBehaviour
     /// </summary>
     public void StartServer()
     {
-        thread = new Thread(new ThreadStart(SetupServer));
-        thread.Start();
-    }
+        if (server != null)
+        {
+            Debug.Log("Server Already Started!");
+            return;
+        }
 
+        Debug.Log("Starting Android Server Setup");
+        StartCoroutine(nameof(CoroutineSetupServer));
+    }
 
     private IEnumerator CoroutineSetupServer()
     {
@@ -117,8 +126,12 @@ public class WifiServerController : MonoBehaviour
             Debug.Log("Starting WIFI Server");
             while (true)
             {
+                if (server == null)
+                {
+                    break;
+                }
                 // Check for pending connection without blocking indefinitely
-                if (server.Pending())
+                if (server != null && server.Pending())
                 {
                     client = server.AcceptTcpClient();
                     Debug.Log("Connected!");
@@ -280,6 +293,8 @@ public class WifiServerController : MonoBehaviour
 
     public void CloseServer()
     {
+        Debug.Log("Closing Android Server Setup");
+
         stream.Close();
         client.Close();
         server.Stop();
