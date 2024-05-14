@@ -170,7 +170,7 @@ public class WifiServerController : MonoBehaviour
                         init = true;
                         InitConnection(data);
                     }
-                    string response = "Server response: " + data.ToString();
+                    string response = "Server response: Data received, client data:" + data.ToString();
                     //SendMessageToClient(client.GetHashCode(), message: response);
                     SendMessageToClient(message: response);
                 }
