@@ -215,8 +215,6 @@ public class WifiClientController : MonoBehaviour
     private void ControlClient(string serverMessage)
     {
        // regex for client control
-
-
         switch (serverMessage)
         {
             case "tst":
