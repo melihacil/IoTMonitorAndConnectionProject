@@ -11,6 +11,7 @@ using System;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 using UnityEngine.Android;
+using TMPro;
 
 
 public class WifiServerController : MonoBehaviour
@@ -25,11 +26,15 @@ public class WifiServerController : MonoBehaviour
     TcpClient client = null;
     NetworkStream stream = null;
     Thread thread;
+    private Dictionary<int, string> _connectedDevices = new Dictionary<int, string>();
 
     [SerializeField] private string _serverIP = "172.33.133.57";
     [SerializeField] private GameObject _androidDeviceControls;
     [SerializeField] private GameObject _otherDeviceControls;
+    [SerializeField] private TextMeshProUGUI _logTexts;
     [SerializeField] private Text _serverMessage;
+    [SerializeField] private Text _connectedClients;
+
     [SerializeField] private float maxWaitTime;
 
     Queue<Action> jobs = new Queue<Action>();
@@ -186,10 +191,23 @@ public class WifiServerController : MonoBehaviour
         }
     }
 
+    private void AddDevicesText(string deviceInfo)
+    {
+        
+        WifiServerController.instance.AddJob(() =>
+        {
+            // Will run on main thread, hence issue is solved
+            _connectedClients.text +=  "Connected: " + deviceInfo + "Device" + "Poco X4";
+        });
+    }
 
-
+    /// <summary>
+    /// Sets the server up for windows devices
+    /// Runs on thread for each device
+    /// </summary>
     private void SetupServer()
     {
+        bool isInit = false;
         try
         {
             IPAddress localAddr = IPAddress.Parse(_serverIP);
@@ -209,23 +227,33 @@ public class WifiServerController : MonoBehaviour
                 stream = client.GetStream();
 
                 // Store the client's stream in the dictionary using a unique identifier (e.g., client.GetHashCode())
-                clientStreams.Add(client.GetHashCode(), stream);
-
+                int hashCode = client.GetHashCode();
+                clientStreams.Add(hashCode,stream);
                 int i;
 
                 while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
                 {
+                    
                     data = Encoding.UTF8.GetString(buffer, 0, i);
                     Debug.Log("Received: " + data);
+                    if (!isInit)
+                    {
+                        isInit = true;
+                    }
                     if (!init)
                     {
                         init = true;
+                        AddDevicesText(data);
                         InitConnection(data);
                     }
                     string response = "Server response: " + data.ToString();
 
                     // Send the response to the client using the stored stream
                     SendMessageToClient(client.GetHashCode(), message: response);
+                    WifiServerController.instance.AddJob(() =>
+                    {
+                        _logTexts.text += data.ToString();
+                    });
                 }
                 client.Close();
             }
@@ -280,13 +308,14 @@ public class WifiServerController : MonoBehaviour
         switch (clientMessage)
         {
             case "200":
-
+                Debug.Log("Message sent!- Ok");
                 break;
             case "400":
+                Debug.Log("Message cannot be send! No device found!");
 
                 break;
             case "500":
-
+                Debug.Log("Message did not send! Error connecting to the device");
                 break;
         }
     }
@@ -319,6 +348,7 @@ public class WifiServerController : MonoBehaviour
             byte[] msg = Encoding.UTF8.GetBytes(message);
             clientStream.Write(msg, 0, msg.Length);
             Debug.Log("Sent to client " + clientId + ": " + message);
+
         }
         else
         {
