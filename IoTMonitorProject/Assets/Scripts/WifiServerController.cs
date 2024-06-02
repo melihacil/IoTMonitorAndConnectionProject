@@ -68,12 +68,6 @@ public class WifiServerController : MonoBehaviour
 #if UNITY_ANDROID
         Debug.Log("Starting Android Server Setup");
         StartCoroutine(nameof(CoroutineSetupServer));
-        //thread = new Thread(() =>
-        //{
-        //    // ListenForData should be run on the thread
-        //    SetupServer();
-        //});
-        //thread.Start();
 #else
             Debug.Log("Other build, starting thread server");
             thread = new Thread(new ThreadStart(SetupServer));
