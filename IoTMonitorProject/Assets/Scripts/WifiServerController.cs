@@ -171,7 +171,7 @@ public class WifiServerController : MonoBehaviour
                     }
                     string response = "Server response: Data received, client data:" + data.ToString();
                     //SendMessageToClient(client.GetHashCode(), message: response);
-                    SendMessageToClient(message: response);
+                    SendMessageToClient(client.GetHashCode(), message: response);
                 }
             }
         }
@@ -305,10 +305,11 @@ public class WifiServerController : MonoBehaviour
                 Debug.Log("Message sent!- Ok");
                 break;
             case "400":
+                NotFoundError();
                 Debug.Log("Message cannot be send! No device found!");
-
                 break;
             case "500":
+                NotDeviceError();
                 Debug.Log("Message did not send! Error connecting to the device");
                 break;
         }
@@ -355,6 +356,18 @@ public class WifiServerController : MonoBehaviour
         byte[] msg = Encoding.UTF8.GetBytes(_serverMessage.text);
         stream.Write(msg, 0, msg.Length);
         Debug.Log("Sent to client: " + _serverMessage.text);
+    }
+
+    public void NotFoundError()
+    {
+        Debug.Log("Message cannot be send! No device found!");
+        CloseServer();
+    }
+    public void NotDeviceError()
+    {
+        Debug.Log("Message did not send! Error connecting to the device");
+
+        CloseServer();
     }
 
     public void SendMessageToClient(string message)
